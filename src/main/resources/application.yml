@@ -1,0 +1,24 @@
+server:
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        secure: false
+  port: 8888
+
+
+
+spring:
+  datasource:
+    username: root
+    password: 20177600
+    url: jdbc:mysql://47.98.240.31:3307/auto_deal?userSSL=false&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  thymeleaf:
+    cache: false
+#mybatis开启别名
+mybatis:
+  type-aliases-package: con.edu.lingnan.deal.pojo
+  configuration:
+    map-underscore-to-camel-case: true

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>Auto-Deal</title>
+    <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport'/>
+</head>
+<body>
+<textarea id="str" type="text" style="width: 30%; height: 200px"></textarea>
+<button onclick="send()">整理</button>
+<textarea type="text" style="width: 30%; height: 200px"></textarea>
+<textarea type="text" style="width: 30%; height: 200px"></textarea>
+
+    <script th:src="@{/jquery.3.2.1.min.js}"></script>
+    <script>
+        function send() {
+            var str = $('#str').val();
+            $.ajax({
+                type: "post",
+                url: "/query",
+                dataType: "json",
+                data: {
+                    str: str
+                },
+                success: function (data) {
+                    console.log(data);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
