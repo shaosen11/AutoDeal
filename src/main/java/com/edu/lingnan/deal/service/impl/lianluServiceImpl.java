@@ -20,4 +20,9 @@ public class lianluServiceImpl implements lianluService {
     public lianlu getByName(String name) {
         return lianluMapper.getByName(name);
     }
+
+    @Override
+    public Integer insert(lianlu lianlu) {
+        return lianluMapper.insert(lianlu);
+    }
 }

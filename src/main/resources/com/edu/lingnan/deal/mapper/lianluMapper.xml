@@ -2,7 +2,27 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.edu.lingnan.deal.mapper.lianluMapper">
     <select id="getByName" resultType="com.edu.lingnan.deal.pojo.lianlu">
-        select * from lianlu where name = #{name}
+        select * from lianlu where name like concat('%', #{name}, '%')
     </select>
 
+    <insert id="insert">
+        insert into lianlu
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null">
+                name,
+            </if>
+            <if test="mark != null">
+                mark,
+            </if>
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null">
+                #{name},
+            </if>
+            <if test="mark != null">
+                #{mark},
+            </if>
+        </trim>
+    </insert>
 </mapper>

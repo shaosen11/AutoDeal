@@ -9,4 +9,6 @@ import com.edu.lingnan.deal.pojo.lianlu;
  */
 public interface lianluService {
     lianlu getByName(String name);
+
+    Integer insert(lianlu lianlu);
 }

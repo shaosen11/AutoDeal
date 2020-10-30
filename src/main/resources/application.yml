@@ -8,7 +8,6 @@ server:
   port: 8888
 
 
-
 spring:
   datasource:
     username: root
@@ -22,3 +21,6 @@ mybatis:
   type-aliases-package: con.edu.lingnan.deal.pojo
   configuration:
     map-underscore-to-camel-case: true
+logging:
+  level:
+    com.edu.lingnan.deal.mapper : debug

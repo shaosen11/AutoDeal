@@ -13,4 +13,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface lianluMapper {
     lianlu getByName(String name);
+
+    Integer insert(lianlu lianlu);
 }
