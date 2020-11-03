@@ -63,6 +63,7 @@
 <script th:src="@{/jquery.3.2.1.min.js}"></script>
 <script th:src="@{/bootstrap-4.5.3-dist/js/bootstrap.js}"></script>
 <script th:src="@{/bootstrap-4.5.3-dist/js/bootstrap.bundle.js}"></script>
+<script th:src="@{/sweetalert.min.js}"></script>
 <script>
     function send() {
         var str = $('#queryList').val();
@@ -74,6 +75,11 @@
                 str: str
             },
             success: function (data) {
+                swal("查询成功", {
+                    icon: "success",
+                    buttons: false,
+                    timer: 1000,
+                });
                 var frontList = "";
                 for (var int = 0; int < data.frontList.length; int++) {
                     frontList += data.frontList[int].name + data.frontList[int].mark + "\r\n";
@@ -85,6 +91,13 @@
                     markList += data.markList[int].name + data.markList[int].mark + "\r\n";
                 }
                 $('#markList').text(markList);
+            },
+            error: function () {
+                swal("查询失败", {
+                    icon: "error",
+                    buttons: false,
+                    timer: 1000,
+                });
             }
         });
     }
@@ -99,7 +112,11 @@
                 str: str
             },
             success: function () {
-                alert("插入成功");
+                swal("插入成功", {
+                    icon: "success",
+                    buttons: false,
+                    timer: 1000,
+                });
             }
         });
     }

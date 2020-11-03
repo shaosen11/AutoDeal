@@ -9,10 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author shaosen
@@ -35,7 +32,13 @@ public class lianluController {
     @PostMapping("/query")
     public Map query(String str) {
         List<lianlu> frontList = frontList(str);
+        for (lianlu lianlu : frontList) {
+            System.out.println(lianlu);
+        }
         List<lianlu> markList = markList(frontList);
+        for (lianlu lianlu : markList) {
+            System.out.println(lianlu);
+        }
         Map<String, List> map = new HashMap<>();
         map.put("frontList", frontList);
         map.put("markList", markList);
@@ -47,9 +50,17 @@ public class lianluController {
     public Integer insert(String str) {
         str = str.trim();
         Integer index = 0;
-        lianlu lianlu = new lianlu();
         for (int i = 0; i < str.length(); i++) {
-            if (i == str.length() - 1 || str.charAt(i + 1) == '<') {
+            if (i == str.length() - 1 ) {
+                String lianluStr = str.substring(index, i+1);
+                lianlu frontListToLianlu = frontListToLianlu(lianluStr);
+                if (insertFlag(frontListToLianlu)) {
+                    if (lianluService.getByName(frontListToLianlu.getName()) == null) {
+                        lianluService.insert(frontListToLianlu);
+                    }
+                }
+                index = i;
+            }else if(str.charAt(i + 1) == '<'){
                 String lianluStr = str.substring(index, i);
                 lianlu frontListToLianlu = frontListToLianlu(lianluStr);
                 if (insertFlag(frontListToLianlu)) {
@@ -72,8 +83,10 @@ public class lianluController {
     public lianlu duankou(String str) {
         int lianluIndex = str.indexOf("<");
         int duankouIndex = str.indexOf("[");
-        if (duankouIndex < lianluIndex) {
-            return new lianlu().setName(str.substring(str.indexOf("["), str.indexOf("]") + 1)).setMark(StringContent.duankouxuyaochuli);
+        if (duankouIndex != -1 && lianluIndex != -1) {
+            if (duankouIndex < lianluIndex) {
+                return new lianlu().setName(str.substring(str.indexOf("["), str.indexOf("]") + 1)).setMark(StringContent.duankouxuyaochuli);
+            }
         }
         return null;
     }
@@ -88,11 +101,32 @@ public class lianluController {
         List<lianlu> frontList = new ArrayList<>();
         Integer index = 0;
         StringBuilder line = new StringBuilder();
+        Stack<Integer> depth= new Stack();
         for (int i = 0; i < str.length(); i++) {
-            if (str.charAt(i) == '[' || str.charAt(i) == '<') {
+            if(str.charAt(i) == '['){
                 line.setLength(0);
                 index = i;
-            } else if (str.charAt(i) == ']' || str.charAt(i) == '>') {
+                depth.push(index);
+            }else if (str.charAt(i) == ']'){
+                if(depth.size()==1){
+                    for (int j = depth.pop(); j <= i; j++) {
+                        line.append(str.charAt(j));
+                    }
+                    if (line.toString().contains("支路")){
+                        List<lianlu> lianlus = frontProtectList(line.toString().substring(1,line.toString().length()-1));
+                        frontList.addAll(lianlus);
+                    }else {
+                        frontList.add(new lianlu().setName(line.toString()));
+                    }
+
+                }else if (depth.size()>1){
+                    depth.pop();
+                }
+            }
+            if (str.charAt(i) == '<') {
+                line.setLength(0);
+                index = i;
+            } else if (str.charAt(i) == '>') {
                 for (int j = index; j <= i; j++) {
                     line.append(str.charAt(j));
                 }
@@ -104,12 +138,13 @@ public class lianluController {
 
     /**
      * 自动标记
+     *
      * @param frontList
      * @return
      */
     public List markList(List<lianlu> frontList) {
         List<lianlu> markList = new ArrayList();
-        lianlu duankou = duankou(frontList.toString().substring(1,frontList.toString().length()-1));
+        lianlu duankou = duankou(frontList.toString().substring(1, frontList.toString().length() - 1));
         if (duankou != null) {
             markList.add(duankou);
         }
@@ -117,13 +152,17 @@ public class lianluController {
             if (lianlu.getName().startsWith("<")) {
                 if (lianlu.getName().lastIndexOf("/") != -1) {
                     lianlu lianluServiceByName = lianluService.getByName(lianlu.getName().substring(1, lianlu.getName().lastIndexOf(">")));
-                    if (lianluServiceByName==null){
+                    if (lianluServiceByName == null) {
                         lianluServiceByName = lianluService.getByName(lianlu.getName().substring(1, lianlu.getName().lastIndexOf("/")));
                     }
                     if (lianluServiceByName != null) {
                         markList.add(lianlu.setMark(lianluServiceByName.getMark()));
                     } else {
-                        markList.add(lianlu.setName(lianlu.getName()).setMark(StringContent.qingchaxun));
+                        lianlu.setName(lianlu.getName());
+                        if(lianlu.getMark()==null){
+                            lianlu.setMark(StringContent.qingchaxun);
+                        }
+                        markList.add(lianlu);
                     }
                 } else {
                     markList.add(lianlu.setMark(StringContent.lianlubuqueding));
@@ -136,15 +175,16 @@ public class lianluController {
 
     /**
      * 把string转换为lianlu
+     *
      * @param lianluStr
      * @return
      */
-    public lianlu frontListToLianlu(String lianluStr){
+    public lianlu frontListToLianlu(String lianluStr) {
         String name;
         String mark = lianluStr.substring(lianluStr.lastIndexOf(">") + 1, lianluStr.length());
-        if (mark.equals(StringContent.sulvbucunzai)){
+        if (mark.equals(StringContent.sulvbucunzai)) {
             name = lianluStr.substring(lianluStr.indexOf("<") + 1, lianluStr.lastIndexOf(">"));
-        }else {
+        } else {
             name = lianluStr.substring(lianluStr.indexOf("<") + 1, lianluStr.lastIndexOf("/"));
         }
         return new lianlu(name, mark);
@@ -153,13 +193,45 @@ public class lianluController {
 
     /**
      * 判断是否需要插入
+     *
      * @param lianlu
      * @return
      */
-    public boolean insertFlag(lianlu lianlu){
-        if(lianlu.getMark().equals(StringContent.lianlubucunzai)||lianlu.getMark().equals(StringContent.sulvbucunzai)){
+    public boolean insertFlag(lianlu lianlu) {
+        if (lianlu.getMark().equals(StringContent.lianlubucunzai) || lianlu.getMark().equals(StringContent.sulvbucunzai)) {
             return true;
         }
         return false;
+    }
+
+    public List<lianlu> frontProtectList(String str){
+        String str1 = str.substring(str.lastIndexOf("支路1")+4, str.lastIndexOf("；"));
+        String str2 = str.substring(str.lastIndexOf("支路2")+4);
+        Integer index = 0;
+        StringBuilder line = new StringBuilder();
+        List<lianlu> frontList = new ArrayList<>();
+        for(int i=0;i<str1.length();i++){
+            if (str.charAt(i) == '<') {
+                line.setLength(0);
+                index = i;
+            } else if (str.charAt(i) == '>') {
+                for (int j = index; j <= i; j++) {
+                    line.append(str.charAt(j));
+                }
+                frontList.add(new lianlu().setName(line.toString()));
+            }
+        }
+        for(int i=0;i<str1.length();i++){
+            if (str.charAt(i) == '<') {
+                line.setLength(0);
+                index = i;
+            } else if (str.charAt(i) == '>') {
+                for (int j = index; j <= i; j++) {
+                    line.append(str.charAt(j));
+                }
+                frontList.add(new lianlu().setName(line.toString()).setMark(StringContent.baohulianlu));
+            }
+        }
+        return frontList;
     }
 }
