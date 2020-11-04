@@ -25,4 +25,9 @@ public class lianluServiceImpl implements lianluService {
     public Integer insert(lianlu lianlu) {
         return lianluMapper.insert(lianlu);
     }
+
+    @Override
+    public Integer update(lianlu lianlu) {
+        return lianluMapper.update(lianlu);
+    }
 }

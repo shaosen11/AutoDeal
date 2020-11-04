@@ -25,4 +25,8 @@
             </if>
         </trim>
     </insert>
+
+    <update id="update">
+        update lianlu set mark = #{mark} where name = #{name}
+    </update>
 </mapper>

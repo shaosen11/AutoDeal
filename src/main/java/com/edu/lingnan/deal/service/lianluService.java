@@ -11,4 +11,6 @@ public interface lianluService {
     lianlu getByName(String name);
 
     Integer insert(lianlu lianlu);
+
+    Integer update(lianlu lianlu);
 }
