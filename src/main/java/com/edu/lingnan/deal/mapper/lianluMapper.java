@@ -17,4 +17,6 @@ public interface lianluMapper {
     Integer insert(lianlu lianlu);
 
     Integer update(lianlu lianlu);
+
+    Integer delete(lianlu lianlu);
 }

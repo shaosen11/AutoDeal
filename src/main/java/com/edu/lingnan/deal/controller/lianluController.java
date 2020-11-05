@@ -61,17 +61,29 @@ public class lianluController {
     }
 
     /**
-     * 判断是否需要处理端口
+     * 判断是否需要前置处理端口
      *
      * @param str
      * @return
      */
-    public lianlu duankou(String str) {
+    public lianlu frontduankou(String str) {
         int lianluIndex = str.indexOf("<");
         int duankouIndex = str.indexOf("[");
         if (duankouIndex != -1 && lianluIndex != -1) {
             if (duankouIndex < lianluIndex) {
                 return new lianlu().setName(str.substring(str.indexOf("["), str.indexOf("]") + 1)).setMark(StringContent.duankouxuyaochuli);
+            }
+        }
+        return null;
+    }
+
+
+    public lianlu backduankou(String str){
+        int lianluIndex = str.lastIndexOf("<");
+        int duankouIndex = str.lastIndexOf("[");
+        if (duankouIndex != -1 && lianluIndex != -1) {
+            if (duankouIndex > lianluIndex) {
+                return new lianlu().setName(str.substring(str.lastIndexOf("["), str.lastIndexOf("]") + 1)).setMark(StringContent.duankouxuyaochuli);
             }
         }
         return null;
@@ -130,9 +142,10 @@ public class lianluController {
      */
     public List markList(List<lianlu> frontList) {
         List<lianlu> markList = new ArrayList();
-        lianlu duankou = duankou(frontList.toString().substring(1, frontList.toString().length() - 1));
-        if (duankou != null) {
-            markList.add(duankou);
+        String substring = frontList.toString().substring(1, frontList.toString().length() - 1);
+        lianlu frontduankou = frontduankou(substring);
+        if (frontduankou != null) {
+            markList.add(frontduankou);
         }
         for (lianlu lianlu : frontList) {
             if (lianlu.getName().startsWith("<")) {
@@ -155,6 +168,12 @@ public class lianluController {
                 }
             }
         }
+
+        lianlu backduankou = backduankou(substring);
+        if (backduankou != null) {
+            markList.add(backduankou);
+        }
+        System.out.println(markList);
         return markList;
     }
 
@@ -190,16 +209,27 @@ public class lianluController {
         return false;
     }
 
+    /**
+     * 插入数据库
+     * @param lianlu
+     */
     public void insertDB(lianlu lianlu){
         if (insertFlag(lianlu)) {
             if (lianluService.getByName(lianlu.getName()) == null) {
                 lianluService.insert(lianlu);
+            }else if (lianlu.getMark().equals(StringContent.cunzai)){
+                lianluService.delete(lianlu);
             }else {
                 lianluService.update(lianlu);
             }
         }
     }
 
+    /**
+     * 标识支路
+     * @param str
+     * @return
+     */
     public List<lianlu> frontProtectList(String str) {
         System.out.println(str);
         String str1 = str.substring(str.lastIndexOf("支路1") + 4, str.lastIndexOf("；"));

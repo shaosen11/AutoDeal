@@ -13,4 +13,6 @@ public interface lianluService {
     Integer insert(lianlu lianlu);
 
     Integer update(lianlu lianlu);
+
+    Integer delete(lianlu lianlu);
 }

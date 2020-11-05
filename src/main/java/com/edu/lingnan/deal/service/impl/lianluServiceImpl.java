@@ -30,4 +30,11 @@ public class lianluServiceImpl implements lianluService {
     public Integer update(lianlu lianlu) {
         return lianluMapper.update(lianlu);
     }
+
+    @Override
+    public Integer delete(lianlu lianlu) {
+        return lianluMapper.delete(lianlu);
+    }
+
+
 }

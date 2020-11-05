@@ -29,4 +29,8 @@
     <update id="update">
         update lianlu set mark = #{mark} where name = #{name}
     </update>
+
+    <delete id="delete">
+        delete * from lianlu where name = #{name}
+    </delete>
 </mapper>
