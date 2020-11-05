@@ -87,28 +87,25 @@ public class lianluController {
         List<lianlu> frontList = new ArrayList<>();
         Integer index = 0;
         StringBuilder line = new StringBuilder();
-        Stack<Integer> depth = new Stack();
         for (int i = 0; i < str.length(); i++) {
             if (str.charAt(i) == '[') {
                 line.setLength(0);
-                index = i;
-                depth.push(index);
-            } else if (str.charAt(i) == ']') {
-                if (depth.size() == 1) {
-                    for (int j = depth.pop(); j <= i; j++) {
-                        line.append(str.charAt(j));
-                    }
-                    if (line.toString().contains("支路")) {
-                        List<lianlu> lianlus = frontProtectList(line.toString().substring(1, line.toString().length() - 1));
+                //处理
+                Integer nextIndex = nextIndex(i, str);
+                if (nextIndex != null){
+                    String substring = str.substring(i, nextIndex + 1);
+                    if (substring.contains("支路")){
+                        List<lianlu> lianlus = frontProtectList(str.substring(i, nextIndex + 1));
                         frontList.addAll(lianlus);
-                    } else {
-                        frontList.add(new lianlu().setName(line.toString()));
+                    }else {
+                        frontList.add(new lianlu().setName(substring));
                     }
-
-                } else if (depth.size() > 1) {
-                    depth.pop();
+                    i = nextIndex + 1;
+                }else {
+                    throw new NullPointerException();
                 }
             }
+            //原本就添加了
             if (str.charAt(i) == '<') {
                 line.setLength(0);
                 index = i;
@@ -200,8 +197,12 @@ public class lianluController {
         }
     }
 
+    /**
+     * 标识保护电路
+     * @param str
+     * @return
+     */
     public List<lianlu> frontProtectList(String str) {
-        System.out.println(str);
         String str1 = str.substring(str.lastIndexOf("支路1") + 4, str.lastIndexOf("；"));
         String str2 = str.substring(str.lastIndexOf("支路2") + 4);
         Integer index = 0;
@@ -230,5 +231,26 @@ public class lianluController {
             }
         }
         return frontList;
+    }
+
+    /**
+     * 选择下一个电路
+     * @param start
+     * @param str
+     * @return
+     */
+    public Integer nextIndex(int start,String str){
+        int depth = 0;
+        for (int i = start; i < str.length(); i++) {
+            if(str.charAt(i)=='['){
+                depth++;
+            }else if (str.charAt(i)==']'){
+                depth--;
+                if (depth==0){
+                    return i;
+                }
+            }
+        }
+        return null;
     }
 }
