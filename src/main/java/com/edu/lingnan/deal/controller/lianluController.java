@@ -61,7 +61,7 @@ public class lianluController {
     }
 
     /**
-     * 判断是否需要处理端口
+     * 判断是否需要处理前置端口
      *
      * @param str
      * @return
@@ -78,7 +78,12 @@ public class lianluController {
     }
 
 
-    public lianlu backduankou(String str){
+    /**
+     * 判断是否需要处理后置端口
+     * @param str
+     * @return
+     */
+    public lianlu backduankou(String str) {
         int lianluIndex = str.lastIndexOf("<");
         int duankouIndex = str.lastIndexOf("[");
         if (duankouIndex != -1 && lianluIndex != -1) {
@@ -97,35 +102,41 @@ public class lianluController {
      */
     public List frontList(String str) {
         List<lianlu> frontList = new ArrayList<>();
-        Integer index = 0;
         StringBuilder line = new StringBuilder();
         for (int i = 0; i < str.length(); i++) {
             if (str.charAt(i) == '[') {
                 line.setLength(0);
-                //处理
-                Integer nextIndex = nextIndex(i, str);
-                if (nextIndex != null){
+                Integer nextIndex = nextIndex(i, str, '[', ']');
+                if (nextIndex != null) {
                     String substring = str.substring(i, nextIndex + 1);
-                    if (substring.contains("支路")){
+                    if (substring.contains("支路")) {
                         List<lianlu> lianlus = frontProtectList(str.substring(i, nextIndex + 1));
                         frontList.addAll(lianlus);
-                    }else {
+                    } else {
                         frontList.add(new lianlu().setName(substring));
                     }
                     i = nextIndex + 1;
-                }else {
+                    if (i >= str.length()) {
+                        break;
+                    }
+                    continue;
+                } else {
                     throw new NullPointerException();
                 }
-            }
-            //原本就添加了
-            if (str.charAt(i) == '<') {
+            } else if (str.charAt(i) == '<') {
                 line.setLength(0);
-                index = i;
-            } else if (str.charAt(i) == '>') {
-                for (int j = index; j <= i; j++) {
-                    line.append(str.charAt(j));
+                Integer nextIndex = nextIndex(i, str, '<', '>');
+                if (nextIndex != null) {
+                    String substring = str.substring(i, nextIndex + 1);
+                    frontList.add(new lianlu().setName(substring));
+                    i = nextIndex + 1;
+                    if (i >= str.length()) {
+                        break;
+                    }
+                    continue;
+                } else {
+                    throw new NullPointerException();
                 }
-                frontList.add(new lianlu().setName(line.toString()));
             }
         }
         return frontList;
@@ -140,10 +151,12 @@ public class lianluController {
     public List markList(List<lianlu> frontList) {
         List<lianlu> markList = new ArrayList();
         String substring = frontList.toString().substring(1, frontList.toString().length() - 1);
+        //前置端口需要处理
         lianlu frontduankou = frontduankou(substring);
         if (frontduankou != null) {
             markList.add(frontduankou);
         }
+        //处理中介链路
         for (lianlu lianlu : frontList) {
             if (lianlu.getName().startsWith("<")) {
                 if (lianlu.getName().lastIndexOf("/") != -1) {
@@ -165,7 +178,7 @@ public class lianluController {
                 }
             }
         }
-
+        //后置端口需要处理
         lianlu backduankou = backduankou(substring);
         if (backduankou != null) {
             markList.add(backduankou);
@@ -208,15 +221,16 @@ public class lianluController {
 
     /**
      * 插入数据库
+     *
      * @param lianlu
      */
-    public void insertDB(lianlu lianlu){
+    public void insertDB(lianlu lianlu) {
         if (insertFlag(lianlu)) {
             if (lianluService.getByName(lianlu.getName()) == null) {
                 lianluService.insert(lianlu);
-            }else if (lianlu.getMark().equals(StringContent.cunzai)){
+            } else if (lianlu.getMark().equals(StringContent.cunzai)) {
                 lianluService.delete(lianlu);
-            }else {
+            } else {
                 lianluService.update(lianlu);
             }
         }
@@ -224,11 +238,11 @@ public class lianluController {
 
     /**
      * 标识支路
+     *
      * @param str
      * @return
      */
     public List<lianlu> frontProtectList(String str) {
-        System.out.println(str);
         String str1 = str.substring(str.lastIndexOf("支路1") + 4, str.lastIndexOf("；"));
         String str2 = str.substring(str.lastIndexOf("支路2") + 4);
         Integer index = 0;
@@ -260,19 +274,20 @@ public class lianluController {
     }
 
     /**
-     * 选择下一个电路
+     * 匹配下一个端口电路，找不到返回空
+     *
      * @param start
      * @param str
      * @return
      */
-    public Integer nextIndex(int start,String str){
+    public Integer nextIndex(int start, String str, char c1, char c2) {
         int depth = 0;
         for (int i = start; i < str.length(); i++) {
-            if(str.charAt(i)=='['){
+            if (str.charAt(i) == c1) {
                 depth++;
-            }else if (str.charAt(i)==']'){
+            } else if (str.charAt(i) == c2) {
                 depth--;
-                if (depth==0){
+                if (depth == 0) {
                     return i;
                 }
             }
