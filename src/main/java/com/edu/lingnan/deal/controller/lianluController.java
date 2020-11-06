@@ -80,6 +80,7 @@ public class lianluController {
 
     /**
      * 判断是否需要处理后置端口
+     *
      * @param str
      * @return
      */
@@ -115,7 +116,7 @@ public class lianluController {
                     } else {
                         frontList.add(new lianlu().setName(substring));
                     }
-                    i = nextIndex + 1;
+                    i = nextIndex;
                     if (i >= str.length()) {
                         break;
                     }
@@ -128,8 +129,9 @@ public class lianluController {
                 Integer nextIndex = nextIndex(i, str, '<', '>');
                 if (nextIndex != null) {
                     String substring = str.substring(i, nextIndex + 1);
+                    System.out.println(substring);
                     frontList.add(new lianlu().setName(substring));
-                    i = nextIndex + 1;
+                    i = nextIndex;
                     if (i >= str.length()) {
                         break;
                     }
@@ -151,6 +153,7 @@ public class lianluController {
     public List markList(List<lianlu> frontList) {
         List<lianlu> markList = new ArrayList();
         String substring = frontList.toString().substring(1, frontList.toString().length() - 1);
+        System.out.println(substring);
         //前置端口需要处理
         lianlu frontduankou = frontduankou(substring);
         if (frontduankou != null) {
